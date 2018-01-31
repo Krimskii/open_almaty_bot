@@ -1,29 +1,102 @@
-const TelegramBot = require('node-telegram-bot-api');
+const TelegramBot = require('node-telegram-bot-api')
 
-// replace the value below with the Telegram token you receive from @BotFather
-const token = '514258171:AAHNdbKU9sz5KoB63afbIDNe-dltbkIc_ow';
+const emoji = require('node-emoji')
 
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, {polling: true});
+const TOKEN = '448727496:AAHLPsVhd272Elei-pM35kTKv6hVPuflHjQ'
 
-// Matches "/echo [whatever]"
-bot.onText(/\/echo (.+)/, (msg, match) => {
-  // 'msg' is the received Message from Telegram
-  // 'match' is the result of executing the regexp above on the text content
-  // of the message
+const bot = new TelegramBot(TOKEN, {polling: true})
 
-  const chatId = msg.chat.id;
-  const resp = match[1]; // the captured "whatever"
+const KB = {
+	news: emoji.get('newspaper') + ' Новости',
+	request: emoji.get('envelope') + ' Обращение',
+	sendRequest: emoji.get('clipboard') + 'Отправить',
+	checkRequest: emoji.get('postbox') + 'Проверить',
+	readNews: emoji.get('newspaper') + ' Читать',
+	subscribeNews: emoji.get('pencil') + 'Подписаться',
+	back: emoji.get('back') + ' Назад'
+}
 
-  // send back the matched "whatever" to the chat
-  bot.sendMessage(chatId, resp);
-});
+bot.onText(/\/start/, msg => {
+	sendGreeting(msg)
+})
 
-// Listen for any kind of message. There are different kinds of
-// messages.
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
+bot.on('message', msg => {
 
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your message');
-});
+	switch (msg.text) {
+		case KB.request:
+			sendRequestScreen(msg.chat.id)
+			break
+		case KB.news:
+			sendNewsScreen(msg.chat.id)
+			break
+		case KB.back:
+			sendGreeting(msg, false)
+			break
+		case KB.sendRequest:
+			applyRequestScreen(msg.chat.id)
+			break
+		case KB.checkRequest:		
+			break
+		case KB.readNews:
+		case KB.subscribeNews:
+			break
+	}
+
+})
+
+function sendGreeting(msg, sayHello = true) {
+	const text = sayHello
+	? `Добрый день, ${msg.from.first_name}\nВас приветствует БОТ общественной приемной акимата г.Алматы`
+	: `Воспользуйтесь меню` + emoji.get('point_up_2')
+
+	bot.sendPhoto(msg.chat.id, "https://open-almaty.kz/sites/all/themes/scholarly_lite/logo.svg")
+
+	bot.sendMessage(msg.chat.id, text, {
+		reply_markup: {
+			keyboard: [
+				[KB.request, KB.news]
+			],
+			resize_keyboard: true,
+		}
+	})	
+}
+
+function sendRequestScreen(chatId) {
+	bot.sendMessage(chatId, `Что вы хотите сделать?`, {
+		reply_markup: {
+			keyboard: [
+				[KB.sendRequest, KB.checkRequest],
+				[KB.back]
+			],
+			resize_keyboard: true,
+		}
+		
+	})
+}
+
+function sendNewsScreen(chatId) {
+	bot.sendMessage(chatId, `Будьте в курсе самых свежих новостей администрации Алматы`, {
+		reply_markup: {
+			keyboard: [
+				[KB.readNews, KB.subscribeNews],
+				[KB.back]
+			],
+			resize_keyboard: true,
+		}
+	})
+}
+
+function applyRequestScreen(chatId) {
+	bot.sendMessage(chatId, `Прикрепите Ваши данные`, {
+		reply_markup: {
+			keyboard: [[{
+				text: "Телефон",
+				request_contact: true}], 
+			[{
+				text: "Местоположение",
+				request_location: true}],
+				[KB.back]],
+				resize_keyboard: true,
+			}
+		})
+}
