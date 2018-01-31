@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api')
 
 const emoji = require('node-emoji')
 
-const TOKEN = '448727496:AAHLPsVhd272Elei-pM35kTKv6hVPuflHjQ'
+const TOKEN = '514258171:AAHNdbKU9sz5KoB63afbIDNe-dltbkIc_ow'
 
 const bot = new TelegramBot(TOKEN, {polling: true})
 
